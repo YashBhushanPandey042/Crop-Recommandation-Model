@@ -2,18 +2,15 @@ import streamlit as st
 import numpy as np
 import joblib
 
-# Load model and encoder
 model = joblib.load("crop_prediction_model.pkl")
 le = joblib.load("label_encoder.pkl")
 
-# Page config
 st.set_page_config(
     page_title="🌱 KrishiVerse - Crop Recommendation",
     page_icon="🌾",
     layout="centered"
 )
 
-# Header
 st.markdown(
     """
     <div style="text-align:center">
@@ -26,13 +23,13 @@ st.markdown(
 
 st.write("---")
 
-# Input columns for better UX
 col1, col2 = st.columns(2)
 
 with col1:
     N = st.number_input("Nitrogen (N)", min_value=0, max_value=140, value=50, step=1)
     P = st.number_input("Phosphorus (P)", min_value=5, max_value=145, value=50, step=1)
     K = st.number_input("Potassium (K)", min_value=5, max_value=205, value=50, step=1)
+    rainfall = st.number_input("Rainfall (mm)", min_value=0.0, max_value=500.0, value=100.0, step=1.0)
 
 with col2:
     temperature = st.number_input("Temperature (°C)", min_value=8.0, max_value=45.0, value=25.0, step=0.1, format="%.1f")
@@ -41,13 +38,11 @@ with col2:
 
 st.write("---")
 
-# Predict button
 if st.button("Predict Crop"):
-    input_data = np.array([[N, P, K, temperature, humidity, ph]])
+    input_data = np.array([[N, P, K, temperature, humidity, ph, rainfall]])
     prediction = model.predict(input_data)
     crop_name = le.inverse_transform(prediction)[0]
 
-    # Result display in a highlighted card
     st.markdown(
         f"""
         <div style="background-color:#e8f5e9;padding:20px;border-radius:10px">
@@ -58,12 +53,10 @@ if st.button("Predict Crop"):
         unsafe_allow_html=True
     )
 
-    # Optional crop description card
     descriptions = {
         "rice": "Rice grows well in warm, humid climates with ample water.",
         "wheat": "Wheat prefers moderate temperature and low humidity.",
         "maize": "Maize thrives in well-drained fertile soil with moderate rainfall."
-        # Add more crops as needed
     }
 
     if crop_name.lower() in descriptions:
